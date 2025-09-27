@@ -5,8 +5,12 @@ name: Node.js CI
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - 'v*.*'
   pull_request:
     branches: [ "master" ]
+    tags:
+      - 'v*.*'
 
 permissions:
   contents: write
@@ -45,7 +49,7 @@ jobs:
 
 
     - name: Deploy with gh-pages
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      if: startsWith(github.ref, 'ref/tags/v1.') && github.event_name == 'push'
       run: |
         git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         npm run deploy -- -u "github-actions-bot <support+actions@github.com>"
