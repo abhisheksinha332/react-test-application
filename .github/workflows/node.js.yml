@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
   pages: write
-  
+
 jobs:
   build:
 
@@ -31,6 +31,16 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
+
+    - name: Check for CNAME file in build
+      run: |
+        if [ -f build/CNAME ]; then
+          echo "CNAME file found in build directory:"
+          cat build/CNAME
+        else
+          echo "No CNAME file found in build directory."
+        fi
+        
     - run: npm test
 
 
