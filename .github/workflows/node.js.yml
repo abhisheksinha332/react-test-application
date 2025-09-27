@@ -14,17 +14,13 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [ 20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
@@ -32,20 +28,37 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
 
-    - name: Check for CNAME file in build
-      run: |
-        if [ -f build/CNAME ]; then
-          echo "CNAME file found in build directory:"
-          cat build/CNAME
-        else
-          echo "No CNAME file found in build directory."
-        fi
-
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
     - run: npm test
 
-
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 20.x]
+    needs: test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
     - name: Deploy with gh-pages
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
         git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         npm run deploy -- -u "github-actions-bot <support+actions@github.com>"
