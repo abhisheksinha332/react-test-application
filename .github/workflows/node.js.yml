@@ -69,6 +69,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: build-files
+        path: build 
 
     - name: Rename downloaded folder to 'build'
       run: mv build-files build
